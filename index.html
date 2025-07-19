@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Profil Risiko Investasi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .question-container {
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        .question-container.active {
+            display: block;
+        }
+
+        .question-number {
+            font-size: 0.9rem;
+            color: #764ba2;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .option:hover::before {
+            left: 100%;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .option-label {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .option-text {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-container {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .result-container.active {
+            display: block;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .low-risk {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .medium-risk {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .high-risk {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .result-description {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .recommendations {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .recommendations h3 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .recommendations p {
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            margin-top: 20px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 25px;
+            }
+
+            .title {
+                font-size: 1.6rem;
+            }
+
+            .question {
+                font-size: 1.1rem;
+            }
+
+            .option {
+                padding: 15px;
+            }
+
+            .option-label {
+                font-size: 1rem;
+            }
+
+            .option-text {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            .title {
+                font-size: 1.4rem;
+            }
+
+            .question {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🎯 Quiz Profil Risiko Investasi</h1>
+            <p class="subtitle">Temukan profil risiko investasi yang cocok untuk Anda</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <!-- Pertanyaan 1 -->
+        <div class="question-container active" data-question="1">
+            <div class="question-number">Pertanyaan 1 dari 5</div>
+            <div class="question">Kalau uangmu turun 20% dari modal, apa yang kamu rasakan?</div>
+            <div class="options">
+                <div class="option" data-value="1">
+                    <div class="option-label">A.</div>
+                    <div class="option-text">Panik, ingin tarik uang secepatnya.</div>
+                </div>
+                <div class="option" data-value="2">
+                    <div class="option-label">B.</div>
+                    <div class="option-text">Tenang, masih wajar, siap evaluasi strategi.</div>
+                </div>
+                <div class="option" data-value="3">
+                    <div class="option-label">C.</div>
+                    <div class="option-text">Biasa saja, namanya juga investasi, rugi/profit sudah risiko.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pertanyaan 2 -->
+        <div class="question-container" data-question="2">
+            <div class="question-number">Pertanyaan 2 dari 5</div>
+            <div class="question">Kapan kamu butuh uang yang akan diinvestasikan?</div>
+            <div class="options">
+                <div class="option" data-value="1">
+                    <div class="option-label">A.</div>
+                    <div class="option-text">Dalam waktu dekat (1–2 tahun).</div>
+                </div>
+                <div class="option" data-value="2">
+                    <div class="option-label">B.</div>
+                    <div class="option-text">3–5 tahun lagi.</div>
+                </div>
+                <div class="option" data-value="3">
+                    <div class="option-label">C.</div>
+                    <div class="option-text">5 tahun ke atas, nggak masalah diendapkan lama.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pertanyaan 3 -->
+        <div class="question-container" data-question="3">
+            <div class="question-number">Pertanyaan 3 dari 5</div>
+            <div class="question">Bagaimana pendapatanmu sekarang?</div>
+            <div class="options">
+                <div class="option" data-value="1">
+                    <div class="option-label">A.</div>
+                    <div class="option-text">Pas-pasan, lebih fokus jaga modal.</div>
+                </div>
+                <div class="option" data-value="2">
+                    <div class="option-label">B.</div>
+                    <div class="option-text">Cukup stabil, ada sisa uang untuk diinvestasikan rutin.</div>
+                </div>
+                <div class="option" data-value="3">
+                    <div class="option-label">C.</div>
+                    <div class="option-text">Lebih dari cukup, punya uang lebih untuk dicoba-coba.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pertanyaan 4 -->
+        <div class="question-container" data-question="4">
+            <div class="question-number">Pertanyaan 4 dari 5</div>
+            <div class="question">Seberapa paham kamu dengan produk investasi & trading?</div>
+            <div class="options">
+                <div class="option" data-value="1">
+                    <div class="option-label">A.</div>
+                    <div class="option-text">Belum paham sama sekali.</div>
+                </div>
+                <div class="option" data-value="2">
+                    <div class="option-label">B.</div>
+                    <div class="option-text">Sudah pernah belajar dasar-dasarnya.</div>
+                </div>
+                <div class="option" data-value="3">
+                    <div class="option-label">C.</div>
+                    <div class="option-text">Sudah praktek & paham risiko untung rugi.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pertanyaan 5 -->
+        <div class="question-container" data-question="5">
+            <div class="question-number">Pertanyaan 5 dari 5</div>
+            <div class="question">Saat dengar kata "untung cepat", apa yang kamu pikirkan?</div>
+            <div class="options">
+                <div class="option" data-value="1">
+                    <div class="option-label">A.</div>
+                    <div class="option-text">Ragu & takut penipuan.</div>
+                </div>
+                <div class="option" data-value="2">
+                    <div class="option-label">B.</div>
+                    <div class="option-text">Menarik, asal jelas & tahu cara mainnya.</div>
+                </div>
+                <div class="option" data-value="3">
+                    <div class="option-label">C.</div>
+                    <div class="option-text">Wah, mau coba! Gas!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hasil -->
+        <div class="result-container" id="resultContainer">
+            <div id="riskBadge" class="risk-badge"></div>
+            <h2 class="result-title" id="resultTitle"></h2>
+            <p class="result-description" id="resultDescription"></p>
+            <div class="recommendations">
+                <h3>💡 Rekomendasi untuk Anda:</h3>
+                <p id="recommendations"></p>
+            </div>
+            <button class="btn restart-btn" onclick="restartQuiz()">🔄 Mulai Quiz Lagi</button>
+        </div>
+
+        <button class="btn" id="nextBtn" onclick="nextQuestion()" style="display: none;">Lanjut</button>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+        let totalQuestions = 5;
+        let answers = [];
+        let selectedAnswer = null;
+
+        function updateProgress() {
+            const progress = ((currentQuestion - 1) / totalQuestions) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function showOptions() {
+            const options = document.querySelectorAll(`.question-container[data-question="${currentQuestion}"] .option`);
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove selection from all options
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    // Add selection to clicked option
+                    this.classList.add('selected');
+                    selectedAnswer = parseInt(this.dataset.value);
+                    
+                    // Show next button
+                    document.getElementById('nextBtn').style.display = 'block';
+                });
+            });
+        }
+
+        function nextQuestion() {
+            if (selectedAnswer === null) return;
+            
+            answers.push(selectedAnswer);
+            selectedAnswer = null;
+            
+            if (currentQuestion < totalQuestions) {
+                // Hide current question
+                document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.remove('active');
+                
+                currentQuestion++;
+                
+                // Show next question
+                setTimeout(() => {
+                    document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.add('active');
+                    showOptions();
+                    updateProgress();
+                    document.getElementById('nextBtn').style.display = 'none';
+                }, 300);
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            const totalScore = answers.reduce((sum, answer) => sum + answer, 0);
+            
+            // Hide current question
+            document.querySelector(`.question-container[data-question="${currentQuestion}"]`).classList.remove('active');
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            // Update progress to 100%
+            document.getElementById('progressFill').style.width = '100%';
+            
+            setTimeout(() => {
+                let riskLevel, badge, title, description, recommendations;
+                
+                if (totalScore <= 7) {
+                    riskLevel = 'low-risk';
+                    badge = '🟢 Low Risk';
+                    title = 'Cocok di investasi aman';
+                    description = 'Profil risiko Anda tergolong konservatif. Anda lebih mengutamakan keamanan modal daripada keuntungan tinggi.';
+                    recommendations = 'Fokus pada deposito, tabungan berjangka, obligasi negara, dan reksa dana pasar uang. Hindari trading forex atau saham spekulasi yang berisiko tinggi.';
+                } else if (totalScore <= 11) {
+                    riskLevel = 'medium-risk';
+                    badge = '🟡 Medium Risk';
+                    title = 'Siap coba risiko sedang';
+                    description = 'Anda memiliki profil risiko moderat. Siap mengambil risiko sedang untuk mendapatkan return yang lebih baik.';
+                    recommendations = 'Cocok untuk reksa dana campuran, obligasi korporasi, dan saham blue chip jangka panjang. Jika tertarik trading, pelajari dulu fundamentalnya dan mulai dengan akun demo sebelum menggunakan modal besar.';
+                } else {
+                    riskLevel = 'high-risk';
+                    badge = '🔴 High Risk';
+                    title = 'Tahan risiko tinggi, tapi hati-hati!';
+                    description = 'Anda memiliki toleransi risiko yang tinggi dan siap menghadapi volatilitas besar untuk peluang keuntungan maksimal.';
+                    recommendations = 'Ingat: risiko besar = peluang rugi besar juga. Jangan langsung terjun ke trading forex tanpa pemahaman yang cukup. Prioritaskan belajar, praktek di akun demo, atau cari mentor berpengalaman terlebih dahulu.';
+                }
+                
+                document.getElementById('riskBadge').textContent = badge;
+                document.getElementById('riskBadge').className = `risk-badge ${riskLevel}`;
+                document.getElementById('resultTitle').textContent = title;
+                document.getElementById('resultDescription').textContent = description;
+                document.getElementById('recommendations').textContent = recommendations;
+                
+                document.getElementById('resultContainer').classList.add('active');
+            }, 500);
+        }
+
+        function restartQuiz() {
+            currentQuestion = 1;
+            answers = [];
+            selectedAnswer = null;
+            
+            // Reset progress
+            document.getElementById('progressFill').style.width = '0%';
+            
+            // Hide result
+            document.getElementById('resultContainer').classList.remove('active');
+            
+            // Reset all questions
+            document.querySelectorAll('.question-container').forEach(container => {
+                container.classList.remove('active');
+                container.querySelectorAll('.option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+            });
+            
+            // Show first question
+            setTimeout(() => {
+                document.querySelector('.question-container[data-question="1"]').classList.add('active');
+                showOptions();
+                updateProgress();
+            }, 300);
+        }
+
+        // Initialize
+        showOptions();
+        updateProgress();
+    </script>
+</body>
+</html>
